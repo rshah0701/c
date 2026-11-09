@@ -1,0 +1,706 @@
+<title>Cubby Winter Shelf</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600&display=swap">
+<style>
+  /* Layout: slim header with cart, two-column hero, one oak shelf of white compartments, three steps, footer; cart slides in from the right. Single light theme by design. */
+  :root {
+    color-scheme: light;
+    --page: #EAF2F7;
+    --ink: #1F2D3D;
+    --ink-soft: #4A5868;
+    --muted: #6B7785;
+    --oak: #C68A4E;
+    --oak-dark: #A87038;
+    --cell: #FFFFFF;
+    --tile: #EEF4F8;
+    --picked: #DCEBDF;
+    --picked-line: #6F9A78;
+    --save: #F2CF63;
+    --line: #D3DEE7;
+    --error: #B42318;
+    --display: "Young Serif", Georgia, "Times New Roman", serif;
+    --text: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --s1: 8px; --s2: 16px; --s3: 24px; --s4: 48px;
+  }
+  [hidden] { display: none !important; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+  }
+  body {
+    background: var(--page); color: var(--ink);
+    font-family: var(--text); font-size: 16px; line-height: 1.5;
+  }
+  body.cart-open { overflow: hidden; }
+  .wrap {
+    max-width: 1080px; margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  h1, h2, h3 { font-family: var(--display); font-weight: 400; margin: 0; text-wrap: balance; }
+  p { margin: 0; }
+  a { color: inherit; }
+  button { font-family: var(--text); }
+  :focus-visible { outline: 3px solid var(--oak); outline-offset: 2px; border-radius: 4px; }
+
+  /* Header */
+  header .wrap { display: flex; align-items: center; justify-content: space-between; gap: var(--s2); padding-block: var(--s2); }
+  .logo { font-family: var(--display); font-size: 26px; text-decoration: none; }
+  .header-right { display: flex; align-items: center; gap: var(--s2); }
+  .nav-link { min-height: 44px; display: inline-flex; align-items: center; padding: 0 var(--s1); font-weight: 500; text-decoration: none; }
+  .nav-link:hover { text-decoration: underline; text-underline-offset: 4px; }
+  .cart-btn {
+    min-height: 44px; padding: 0 var(--s2); border-radius: 8px;
+    border: 2px solid var(--ink); background: transparent; color: var(--ink);
+    font-weight: 600; font-size: 15px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: var(--s1);
+  }
+  .cart-btn:hover { background: var(--cell); }
+  .badge {
+    min-width: 24px; height: 24px; padding: 0 6px; border-radius: 12px;
+    background: var(--save); color: var(--ink); font-size: 13px; font-weight: 600;
+    display: inline-grid; place-items: center; font-variant-numeric: tabular-nums;
+  }
+  .badge.pop { animation: pop .35s ease; }
+  @keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.45); } 100% { transform: scale(1); } }
+
+  /* Hero */
+  .hero .wrap { display: grid; grid-template-columns: 1.15fr 1fr; gap: var(--s4); align-items: center; padding-block: var(--s3) var(--s4); }
+  .hero h1 { font-size: clamp(32px, 4.2vw, 48px); line-height: 1.1; }
+  .hero-text { display: grid; gap: var(--s3); justify-items: start; }
+  .sub { font-size: 18px; color: var(--ink-soft); max-width: 34ch; }
+  .btn-main {
+    min-height: 48px; padding: 0 var(--s3); border-radius: 8px; border: 0;
+    background: var(--ink); color: #fff; font: 600 16px var(--text);
+    display: inline-flex; align-items: center; text-decoration: none; cursor: pointer;
+  }
+  .btn-main:hover { background: #2C3E52; }
+
+  .deal { background: var(--oak); padding: var(--s1); border-radius: 12px; box-shadow: 0 8px 24px rgba(31,45,61,.12); }
+  .deal-inner { background: var(--cell); border-radius: 6px; padding: var(--s3); display: grid; grid-template-columns: auto 1fr; gap: var(--s2) var(--s3); align-items: center; }
+  .deal-emoji { font-size: 72px; line-height: 1; background: var(--tile); border-radius: 8px; width: 112px; height: 112px; display: grid; place-items: center; }
+  .deal-prices { display: grid; gap: var(--s1); }
+  .deal h3 { font-size: 20px; }
+  .was { color: var(--muted); text-decoration: line-through; }
+  .rent { font-size: 18px; }
+  .rent strong { font-size: 28px; font-family: var(--display); font-weight: 400; }
+  .saving { grid-column: 1 / -1; background: var(--save); border-radius: 6px; padding: var(--s1) var(--s2); font-weight: 600; justify-self: start; }
+
+  /* Shelf */
+  .shelf-section .wrap { display: grid; gap: var(--s3); padding-block: 0 var(--s4); }
+  .shelf-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: var(--s1) var(--s2); }
+  .shelf-head h2 { font-size: 32px; }
+  .count { color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .count strong { color: var(--ink); }
+  .shelf {
+    list-style: none; margin: 0;
+    background: var(--oak); border-radius: 12px; padding: var(--s2);
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s2);
+    box-shadow: inset 0 -6px 0 var(--oak-dark), 0 8px 24px rgba(31,45,61,.10);
+  }
+  .item {
+    background: var(--cell); border-radius: 4px; padding: var(--s2);
+    display: grid; gap: var(--s2); grid-template-rows: auto auto 1fr auto;
+    box-shadow: inset 0 3px 0 rgba(31,45,61,.06);
+    transition: background-color .15s ease;
+  }
+  .item .tile { background: var(--tile); border-radius: 4px; height: 144px; display: grid; place-items: center; font-size: 88px; line-height: 1; transition: background-color .15s ease; }
+  .item h3 { font-family: var(--text); font-weight: 600; font-size: 18px; }
+  .item .line { color: var(--ink-soft); }
+  .buy { display: flex; align-items: center; justify-content: space-between; gap: var(--s2); }
+  .price { display: grid; font-variant-numeric: tabular-nums; }
+  .price strong { font-size: 20px; }
+  .price small { color: var(--muted); font-size: 13px; }
+  .add {
+    min-height: 44px; min-width: 128px; padding: 0 var(--s2); border-radius: 8px;
+    border: 2px solid var(--ink); background: transparent; color: var(--ink);
+    font-weight: 600; font-size: 15px; cursor: pointer; white-space: nowrap;
+  }
+  .add:hover { background: var(--tile); }
+  .item.added { background: var(--picked); }
+  .item.added .tile { background: rgba(255,255,255,.6); }
+  .item.added .add { border-color: var(--picked-line); background: #fff; }
+
+  /* How it works */
+  .how { background: var(--cell); }
+  .how .wrap { padding-block: var(--s4); display: grid; gap: var(--s3); }
+  .how h2 { font-size: 32px; }
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s3); counter-reset: step; }
+  .steps li { display: grid; grid-template-columns: 48px 1fr; gap: var(--s2); align-items: center; counter-increment: step; font-size: 18px; }
+  .steps li::before {
+    content: counter(step); width: 48px; height: 48px; border-radius: 50%;
+    border: 2px solid var(--oak); color: var(--oak-dark);
+    display: grid; place-items: center; font-family: var(--display); font-size: 20px;
+  }
+
+  footer .wrap { padding-block: var(--s3); color: var(--ink-soft); font-size: 14px; }
+
+  /* Toast */
+  .toast {
+    position: fixed; z-index: 30;
+    left: 50%; transform: translateX(-50%);
+    bottom: calc(var(--s3) + env(safe-area-inset-bottom, 0px));
+    width: max-content; max-width: calc(100% - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+    background: var(--ink); color: #fff; border-radius: 10px;
+    padding: var(--s1) var(--s1) var(--s1) var(--s2);
+    display: flex; align-items: center; gap: var(--s2);
+    box-shadow: 0 8px 24px rgba(31,45,61,.25);
+    animation: rise .2s ease;
+  }
+  .toast p { min-width: 0; }
+  .toast button {
+    min-height: 44px; padding: 0 var(--s2); border-radius: 6px;
+    border: 2px solid #fff; background: transparent; color: #fff;
+    font-weight: 600; font-size: 15px; cursor: pointer; white-space: nowrap;
+  }
+  .toast button:hover { background: rgba(255,255,255,.12); }
+  @keyframes rise { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+  /* Cart panel */
+  .scrim { position: fixed; inset: 0; z-index: 40; background: rgba(31,45,61,.45); animation: fade .2s ease; }
+  .panel {
+    position: fixed; z-index: 50; top: 0; right: 0; bottom: 0;
+    width: min(420px, 100%); background: var(--page);
+    display: grid; grid-template-rows: auto 1fr auto;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    border-left: 8px solid var(--oak);
+    box-shadow: -8px 0 32px rgba(31,45,61,.2);
+    animation: slide .25s ease;
+  }
+  @keyframes slide { from { transform: translateX(100%); } to { transform: translateX(0); } }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  .panel-head { display: flex; justify-content: space-between; align-items: center; padding: var(--s2) var(--s3); border-bottom: 1px solid var(--line); }
+  .panel-head h2 { font-size: 26px; }
+  .close {
+    min-height: 44px; padding: 0 var(--s2); border-radius: 8px;
+    border: 2px solid var(--ink); background: transparent; color: var(--ink);
+    font-weight: 600; font-size: 15px; cursor: pointer;
+  }
+  .close:hover { background: var(--cell); }
+  .panel-body { overflow-y: auto; padding: var(--s3); }
+  .cart-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s1); }
+  .cart-row {
+    background: var(--cell); border-radius: 6px; padding: var(--s1) var(--s2) var(--s1) var(--s1);
+    display: grid; grid-template-columns: 56px 1fr auto; gap: var(--s2); align-items: center;
+  }
+  .cart-row .mini { width: 56px; height: 56px; border-radius: 4px; background: var(--tile); display: grid; place-items: center; font-size: 34px; line-height: 1; }
+  .cart-row .info { min-width: 0; display: grid; }
+  .cart-row .info span:first-child { font-weight: 600; }
+  .cart-row .info span:last-child { color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .remove {
+    min-height: 44px; padding: 0 var(--s1); border: 0; background: none;
+    color: var(--ink); font-size: 15px; font-weight: 500; cursor: pointer;
+    text-decoration: underline; text-underline-offset: 3px;
+  }
+  .remove:hover { color: var(--oak-dark); }
+  .empty { display: grid; gap: var(--s2); justify-items: start; padding-top: var(--s3); }
+  .empty p { font-size: 18px; }
+  .browse {
+    min-height: 44px; padding: 0 var(--s3); border-radius: 8px;
+    border: 2px solid var(--ink); background: transparent; color: var(--ink);
+    font-weight: 600; font-size: 15px; cursor: pointer;
+  }
+  .browse:hover { background: var(--cell); }
+  .panel-foot { padding: var(--s3); border-top: 1px solid var(--line); background: var(--cell); display: grid; gap: var(--s2); }
+  .total { display: flex; justify-content: space-between; align-items: baseline; gap: var(--s2); font-variant-numeric: tabular-nums; }
+  .total span { font-weight: 600; }
+  .total strong { font-family: var(--display); font-weight: 400; font-size: 28px; }
+  .panel-foot .saving { grid-column: auto; }
+  .fine { color: var(--muted); font-size: 14px; }
+  .solid {
+    min-height: 48px; padding: 0 var(--s3); border: 0; border-radius: 8px;
+    background: var(--ink); color: #fff; font-weight: 600; font-size: 16px; cursor: pointer;
+  }
+  .solid:hover { background: #2C3E52; }
+  .solid.full { width: 100%; }
+
+  /* Reserve popup */
+  .modal-scrim {
+    position: fixed; inset: 0; z-index: 60;
+    background: rgba(31,45,61,.55);
+    display: grid; place-items: center; overflow-y: auto;
+    padding-block: max(var(--s3), env(safe-area-inset-top, 0px)) max(var(--s3), env(safe-area-inset-bottom, 0px));
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    animation: fade .2s ease;
+  }
+  .modal {
+    position: relative; width: 100%; max-width: 480px;
+    background: var(--cell); border-radius: 12px; border-top: 8px solid var(--oak);
+    padding: var(--s3); display: grid; gap: var(--s3);
+    box-shadow: 0 16px 48px rgba(31,45,61,.3);
+    animation: lift .2s ease;
+  }
+  @keyframes lift { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .modal-x {
+    position: absolute; top: var(--s1); right: var(--s1);
+    width: 44px; height: 44px; border: 0; border-radius: 8px; background: transparent;
+    color: var(--ink); font-size: 28px; line-height: 1; cursor: pointer;
+  }
+  .modal-x:hover { background: var(--tile); }
+  .modal-top { display: grid; gap: var(--s1); padding-right: var(--s4); }
+  .modal h2 { font-size: 26px; }
+  .summary { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .note { color: var(--ink-soft); font-size: 15px; }
+  .form { display: grid; gap: var(--s2); }
+  .field { display: grid; gap: var(--s1); }
+  .field label { font-weight: 600; }
+  .field label small { font-weight: 400; color: var(--muted); font-size: 14px; }
+  .field input {
+    min-height: 44px; width: 100%; padding: 0 12px; box-sizing: border-box;
+    border: 2px solid var(--line); border-radius: 8px; background: var(--cell); color: var(--ink);
+    font: 16px var(--text);
+  }
+  .field input:focus-visible { outline: none; border-color: var(--ink); }
+  .field input[aria-invalid="true"] { border-color: var(--error); }
+  .err { color: var(--error); font-size: 14px; }
+  .hint { color: var(--ink-soft); font-size: 14px; }
+  .done-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s1); }
+  .done-list li { display: grid; grid-template-columns: 40px 1fr auto; gap: var(--s2); align-items: center; font-variant-numeric: tabular-nums; }
+  .done-list .mini { width: 40px; height: 40px; border-radius: 4px; background: var(--tile); display: grid; place-items: center; font-size: 24px; }
+  .dates { display: grid; gap: 4px; background: var(--picked); border-radius: 8px; padding: var(--s2); }
+  .dates span:first-child { font-weight: 600; }
+
+  @media (max-width: 900px) {
+    .shelf { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 760px) {
+    .hero .wrap { grid-template-columns: 1fr; gap: var(--s3); }
+    .steps { grid-template-columns: 1fr; gap: var(--s2); }
+  }
+  @media (max-width: 560px) {
+    .shelf { grid-template-columns: 1fr; padding: var(--s1); gap: var(--s1); }
+    .deal-inner { grid-template-columns: 1fr; }
+    .deal-emoji { width: 100%; }
+    .nav-link { padding: 0 4px; }
+    .panel { width: 100%; border-left: 0; padding-left: env(safe-area-inset-left, 0px); }
+    .panel-head, .panel-body, .panel-foot { padding-left: var(--s2); padding-right: var(--s2); }
+  }
+</style>
+
+<header>
+  <div class="wrap">
+    <a class="logo" href="#top" id="top">Cubby</a>
+    <div class="header-right">
+      <a class="nav-link" href="#how">How it works</a>
+      <button class="cart-btn" id="cart-btn" type="button" aria-haspopup="dialog" aria-controls="cart-panel" aria-label="Cart, 0 items">
+        Cart <span class="badge" id="badge" hidden>0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-text">
+        <h1>Winter clothes for your baby, just for the season.</h1>
+        <p class="sub">12-month size. Rent for three months, send it back in spring.</p>
+        <a class="btn-main" href="#shelf">Pick their clothes</a>
+      </div>
+      <aside class="deal" aria-label="Snowsuit price comparison">
+        <div class="deal-inner">
+          <div class="deal-emoji" aria-hidden="true">🧥</div>
+          <div class="deal-prices">
+            <h3>Insulated snowsuit</h3>
+            <span class="was">Buy new $92</span>
+            <span class="rent"><strong>Rent $36</strong> for the season</span>
+          </div>
+          <span class="saving">You save $56</span>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="shelf-section" id="shelf">
+    <div class="wrap">
+      <div class="shelf-head">
+        <h2>The winter shelf</h2>
+        <p class="count" id="count">Nothing picked yet</p>
+      </div>
+      <ul class="shelf" id="shelf-list"></ul>
+    </div>
+  </section>
+
+  <section class="how" id="how">
+    <div class="wrap">
+      <h2>How it works</h2>
+      <ol class="steps">
+        <li>Pick what your baby needs.</li>
+        <li>Wear it all winter.</li>
+        <li>Send it back in spring.</li>
+      </ol>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">Cubby is a demo prototype. Nothing is for sale.</div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden>
+  <p id="toast-text"></p>
+  <button type="button" id="toast-view">View cart</button>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="panel" id="cart-panel" role="dialog" aria-modal="true" aria-labelledby="cart-title" hidden>
+  <div class="panel-head">
+    <h2 id="cart-title">Your cart</h2>
+    <button class="close" id="cart-close" type="button">Close</button>
+  </div>
+  <div class="panel-body">
+    <ul class="cart-list" id="cart-list"></ul>
+    <div class="empty" id="cart-empty">
+      <p>Your cart is empty.</p>
+      <button class="browse" id="browse" type="button">Browse the shelf</button>
+    </div>
+  </div>
+  <div class="panel-foot" id="cart-foot" hidden>
+    <div class="total"><span>Total for 3 months</span><strong id="cart-total">$0</strong></div>
+    <span class="saving" id="cart-save">You save $0 vs buying new</span>
+    <p class="fine">Nothing is charged. Cubby is a demo.</p>
+    <button class="solid full" id="reserve-open" type="button">Reserve</button>
+  </div>
+</aside>
+
+<div class="modal-scrim" id="modal-scrim" hidden>
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <button class="modal-x" id="modal-x" type="button" aria-label="Close">×</button>
+
+    <div id="form-view" class="form">
+      <div class="modal-top">
+        <h2 id="modal-title">Reserve your winter clothes</h2>
+        <p class="summary" id="summary"></p>
+        <p class="note">Cubby is not live yet. Nothing will be charged.</p>
+      </div>
+      <form class="form" id="reserve-form" novalidate>
+        <div class="field">
+          <label for="r-name">Name</label>
+          <input id="r-name" name="name" type="text" autocomplete="name" aria-describedby="e-name">
+          <p class="err" id="e-name" hidden></p>
+        </div>
+        <div class="field">
+          <label for="r-email">Email</label>
+          <input id="r-email" name="email" type="email" autocomplete="email" inputmode="email" aria-describedby="e-email">
+          <p class="err" id="e-email" hidden></p>
+        </div>
+        <div class="field">
+          <label for="r-phone">Phone <small>(optional)</small></label>
+          <input id="r-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" aria-describedby="e-phone">
+          <p class="err" id="e-phone" hidden></p>
+        </div>
+        <div class="field">
+          <label for="r-date">Start date</label>
+          <input id="r-date" name="start" type="date" aria-describedby="r-return e-date">
+          <p class="hint" id="r-return"></p>
+          <p class="err" id="e-date" hidden></p>
+        </div>
+        <button class="solid full" type="submit">Reserve now</button>
+      </form>
+    </div>
+
+    <div id="done-view" class="form" hidden>
+      <div class="modal-top">
+        <h2 id="done-title" tabindex="-1"></h2>
+        <p class="note">Nothing was charged and your details stayed on this page.</p>
+      </div>
+      <ul class="done-list" id="done-list"></ul>
+      <div class="dates">
+        <span id="done-start"></span>
+        <span id="done-return"></span>
+      </div>
+      <div class="total"><span>Total for 3 months</span><strong id="done-total"></strong></div>
+      <button class="solid full" id="done-btn" type="button">Done</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const items = [
+    { id: "snowsuit", emoji: "🧥", name: "Insulated snowsuit", line: "One piece, fleece-lined.", rent: 36, buy: 92 },
+    { id: "fleece", emoji: "👕", name: "Fleece one-piece", line: "A warm layer underneath.", rent: 12, buy: 30 },
+    { id: "boots", emoji: "🥾", name: "Toddler snow boots", line: "Waterproof, easy to pull on.", rent: 18, buy: 45 },
+    { id: "mittens", emoji: "🧤", name: "Waterproof mittens", line: "Long cuffs that stay on.", rent: 8, buy: 20 },
+    { id: "hat", emoji: "🧶", name: "Knit hat with ear flaps", line: "Soft, with a chin strap.", rent: 7, buy: 18 },
+    { id: "footmuff", emoji: "🌨️", name: "Stroller footmuff", line: "Keeps legs warm on walks.", rent: 24, buy: 60 }
+  ];
+  const byId = Object.fromEntries(items.map(it => [it.id, it]));
+  const cart = new Set();
+
+  const $ = id => document.getElementById(id);
+  const list = $("shelf-list"), count = $("count"), badge = $("badge"), cartBtn = $("cart-btn");
+  const toast = $("toast"), toastText = $("toast-text");
+  const panel = $("cart-panel"), scrim = $("scrim");
+  const cartList = $("cart-list"), cartEmpty = $("cart-empty"), cartFoot = $("cart-foot");
+
+  list.innerHTML = items.map(it => `
+    <li class="item" id="item-${it.id}">
+      <div class="tile" aria-hidden="true">${it.emoji}</div>
+      <h3>${it.name}</h3>
+      <p class="line">${it.line}</p>
+      <div class="buy">
+        <div class="price"><strong>$${it.rent} to rent</strong><small>$${it.buy} new</small></div>
+        <button class="add" id="add-${it.id}" type="button" data-id="${it.id}" aria-pressed="false">Add to cart</button>
+      </div>
+    </li>`).join("");
+
+  function totals() {
+    let rent = 0, buy = 0;
+    cart.forEach(id => { rent += byId[id].rent; buy += byId[id].buy; });
+    return { rent, buy, save: buy - rent };
+  }
+
+  function render() {
+    const n = cart.size, t = totals();
+    // Header
+    badge.textContent = n;
+    badge.hidden = n === 0;
+    cartBtn.setAttribute("aria-label", `Cart, ${n} item${n === 1 ? "" : "s"}`);
+    // Shelf tally
+    count.innerHTML = n
+      ? `<strong>${n} picked · $${t.rent}</strong> for the season, $${t.save} less than new`
+      : "Nothing picked yet";
+    // Shelf buttons
+    items.forEach(it => {
+      const on = cart.has(it.id);
+      $("item-" + it.id).classList.toggle("added", on);
+      const b = $("add-" + it.id);
+      b.textContent = on ? "In cart ✓" : "Add to cart";
+      b.setAttribute("aria-pressed", String(on));
+    });
+    // Panel
+    cartList.innerHTML = items.filter(it => cart.has(it.id)).map(it => `
+      <li class="cart-row">
+        <div class="mini" aria-hidden="true">${it.emoji}</div>
+        <div class="info"><span>${it.name}</span><span>$${it.rent} for the season</span></div>
+        <button class="remove" type="button" data-id="${it.id}" aria-label="Remove ${it.name}">Remove</button>
+      </li>`).join("");
+    cartList.hidden = n === 0;
+    cartEmpty.hidden = n !== 0;
+    cartFoot.hidden = n === 0;
+    $("cart-total").textContent = "$" + t.rent;
+    $("cart-save").textContent = `You save $${t.save} vs buying new`;
+  }
+
+  function popBadge() {
+    badge.classList.remove("pop");
+    void badge.offsetWidth;
+    badge.classList.add("pop");
+  }
+
+  let toastTimer;
+  function showToast(name) {
+    toastText.textContent = `${name} added`;
+    toast.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toast.hidden = true; }, 3000);
+  }
+
+  function toggle(id) {
+    if (cart.has(id)) {
+      cart.delete(id);
+      render();
+    } else {
+      cart.add(id);
+      render();
+      popBadge();
+      showToast(byId[id].name);
+    }
+  }
+
+  let lastFocus = null;
+  function openCart() {
+    lastFocus = document.activeElement;
+    toast.hidden = true;
+    clearTimeout(toastTimer);
+    scrim.hidden = false;
+    panel.hidden = false;
+    document.body.classList.add("cart-open");
+    $("cart-close").focus();
+  }
+  function closeCart(returnFocus = true) {
+    if (panel.hidden) return;
+    panel.hidden = true;
+    scrim.hidden = true;
+    document.body.classList.remove("cart-open");
+    if (returnFocus && lastFocus && document.contains(lastFocus)) lastFocus.focus();
+  }
+
+  list.addEventListener("click", e => {
+    const btn = e.target.closest(".add");
+    if (btn) toggle(btn.dataset.id);
+  });
+  cartList.addEventListener("click", e => {
+    const btn = e.target.closest(".remove");
+    if (!btn) return;
+    cart.delete(btn.dataset.id);
+    render();
+    (cartList.querySelector(".remove") || (cart.size ? $("cart-close") : $("browse"))).focus();
+  });
+  cartBtn.addEventListener("click", openCart);
+  $("toast-view").addEventListener("click", openCart);
+  $("cart-close").addEventListener("click", () => closeCart());
+  scrim.addEventListener("click", () => closeCart());
+  $("browse").addEventListener("click", () => {
+    closeCart(false);
+    $("shelf").scrollIntoView();
+    const first = list.querySelector(".add");
+    if (first) first.focus({ preventScroll: true });
+  });
+  /* ---------- Reserving (nothing is sent anywhere) ---------- */
+  const modalScrim = $("modal-scrim"), modal = $("modal");
+  const formView = $("form-view"), doneView = $("done-view"), form = $("reserve-form");
+  const fName = $("r-name"), fEmail = $("r-email"), fPhone = $("r-phone"), fDate = $("r-date");
+  const returnHint = $("r-return");
+  let reserved = false;
+
+  const pad = n => String(n).padStart(2, "0");
+  const toInput = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const today = () => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); };
+  function parseDate(v) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || "");
+    if (!m) return null;
+    const d = new Date(+m[1], +m[2] - 1, +m[3]);
+    return d.getMonth() === +m[2] - 1 ? d : null;
+  }
+  function addMonths(d, n) {
+    const r = new Date(d.getFullYear(), d.getMonth() + n, 1);
+    const last = new Date(r.getFullYear(), r.getMonth() + 1, 0).getDate();
+    r.setDate(Math.min(d.getDate(), last));
+    return r;
+  }
+  const nice = d => d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+  const plural = n => `${n} item${n === 1 ? "" : "s"}`;
+
+  const checks = {
+    name: () => fName.value.trim() ? "" : "Enter your name.",
+    email: () => {
+      const v = fEmail.value.trim();
+      if (!v) return "Enter your email.";
+      return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) ? "" : "Enter an email like name@example.com.";
+    },
+    phone: () => {
+      const v = fPhone.value.trim();
+      if (!v) return "";
+      const digits = v.replace(/\D/g, "").length;
+      return /^[\d\s()+.-]+$/.test(v) && digits >= 7 && digits <= 15 ? "" : "Enter a phone number with at least 7 digits, or leave it blank.";
+    },
+    date: () => {
+      if (!fDate.value) return "Pick a start date.";
+      const d = parseDate(fDate.value);
+      if (!d) return "Pick a start date.";
+      return d < today() ? "Pick today or a later date." : "";
+    }
+  };
+  const fields = { name: fName, email: fEmail, phone: fPhone, date: fDate };
+
+  function setError(key, msg) {
+    const input = fields[key], el = $("e-" + key);
+    el.textContent = msg;
+    el.hidden = !msg;
+    input.setAttribute("aria-invalid", msg ? "true" : "false");
+  }
+  function validate(key) { const msg = checks[key](); setError(key, msg); return !msg; }
+
+  function updateReturn() {
+    const d = parseDate(fDate.value);
+    returnHint.textContent = d && d >= today() ? `Send it back by ${nice(addMonths(d, 3))}.` : "";
+    returnHint.hidden = !returnHint.textContent;
+  }
+
+  Object.entries(fields).forEach(([key, input]) => {
+    const ev = input.type === "date" ? "change" : "input";
+    input.addEventListener(ev, () => {
+      if (key === "date") updateReturn();
+      if (input.getAttribute("aria-invalid") === "true") validate(key);
+    });
+    if (key === "date") input.addEventListener("input", updateReturn);
+  });
+
+  let modalReturnFocus = null;
+  function openModal() {
+    if (!cart.size) return;
+    modalReturnFocus = document.activeElement;
+    reserved = false;
+    const t = totals();
+    $("summary").textContent = `${plural(cart.size)} · 3 months · $${t.rent}`;
+    const todayStr = toInput(today());
+    fDate.min = todayStr;
+    const current = parseDate(fDate.value);
+    if (!current || current < today()) fDate.value = todayStr;
+    Object.keys(fields).forEach(k => setError(k, ""));
+    updateReturn();
+    formView.hidden = false;
+    doneView.hidden = true;
+    modalScrim.hidden = false;
+    fName.focus();
+  }
+
+  function finish() {
+    modalScrim.hidden = true;
+    reserved = false;
+    form.reset();
+    cart.clear();
+    render();
+    closeCart(false);
+    cartBtn.focus();
+  }
+
+  function closeModal() {
+    if (modalScrim.hidden) return;
+    if (reserved) { finish(); return; }
+    modalScrim.hidden = true;
+    if (modalReturnFocus && document.contains(modalReturnFocus)) modalReturnFocus.focus();
+  }
+
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    const order = ["name", "email", "phone", "date"];
+    const bad = order.filter(k => !validate(k));
+    if (bad.length) { fields[bad[0]].focus(); return; }
+
+    const start = parseDate(fDate.value), back = addMonths(start, 3), t = totals();
+    const first = fName.value.trim().split(/\s+/)[0];
+    $("done-title").textContent = `Reserved. Thanks, ${first}.`;
+    $("done-list").innerHTML = items.filter(it => cart.has(it.id)).map(it => `
+      <li><span class="mini" aria-hidden="true">${it.emoji}</span><span>${it.name}</span><span>$${it.rent}</span></li>`).join("");
+    $("done-start").textContent = `Starts ${nice(start)}`;
+    $("done-return").textContent = `Send it back by ${nice(back)}`;
+    $("done-total").textContent = "$" + t.rent;
+    reserved = true;
+    formView.hidden = true;
+    doneView.hidden = false;
+    $("done-title").focus();
+  });
+
+  $("reserve-open").addEventListener("click", openModal);
+  $("modal-x").addEventListener("click", closeModal);
+  $("done-btn").addEventListener("click", finish);
+  modalScrim.addEventListener("click", e => { if (e.target === modalScrim) closeModal(); });
+
+  function trap(e, root) {
+    const f = [...root.querySelectorAll("button, input")].filter(el => el.offsetParent !== null && !el.disabled);
+    if (!f.length) return;
+    const first = f[0], last = f[f.length - 1];
+    if (!root.contains(document.activeElement)) { e.preventDefault(); first.focus(); return; }
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+
+  document.addEventListener("keydown", e => {
+    const modalOpen = !modalScrim.hidden;
+    if (e.key === "Escape") { modalOpen ? closeModal() : closeCart(); }
+    if (e.key === "Tab") {
+      if (modalOpen) trap(e, modal);
+      else if (!panel.hidden) trap(e, panel);
+    }
+  });
+
+  render();
+</script>
